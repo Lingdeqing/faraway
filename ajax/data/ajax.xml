@@ -1,7 +1,3 @@
-{
-  "a":1,
-  "hello":"ajax",
-  "test":{
-    "ajax":1
-  }
-}
+<hello>
+    ajax
+</hello>

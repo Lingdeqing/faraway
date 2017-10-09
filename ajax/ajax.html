@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<button type="button" id="request">发请求</button>
+<select id="type">
+    <option value="xml">xml</option>
+    <option value="json">json</option></select>
+<div id="result"></div>
+<script type="text/javascript">
+    function ajax(url, callback) {
+        var type = 'GET';
+        var xhr;
+        if(window.XMLHttpRequest){
+            xhr = new XMLHttpRequest();
+        } else {
+            xhr = new window.ActiveXObject('Microsoft.XMLHTTP');
+        }
+
+        xhr.open(type, url, true)
+        xhr.send(null)
+
+        xhr.onreadystatechange = function () {
+            if(xhr.readyState == 4 && xhr.status == 200){
+                var data = xhr.responseText;
+                callback(data);
+            }
+        }
+    }
+
+    var $ = document.getElementById.bind(document);
+
+    window.onload = function () {
+        var btn = $('request'),
+            result = $('result'),
+            type = $('type');
+        btn.onclick = function () {
+            ajax('data/ajax.'+type.value, function (data) {
+                result.innerText = data;
+            })
+        }
+    }
+</script>
+</body>
+</html>
