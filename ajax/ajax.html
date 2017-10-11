@@ -23,15 +23,42 @@
             xhr = new window.ActiveXObject('Microsoft.XMLHTTP');
         }
 
-        xhr.open(type, url, true)
-        xhr.send(null)
-
         xhr.onreadystatechange = function () {
+            // readyState
+            // 0 未初始化，未调用open
+            // 1 初始化，已调用open，未调用send
+            // 2 发送数据，已调用send
+            // 3 数据传送中
+            // 4 完成
+
             if(xhr.readyState == 4 && xhr.status == 200){
                 var data = xhr.responseText;
                 callback(data);
             }
         }
+
+        /*
+        // 1.open、send未调用，readystatechange回调函数不会触发
+        // xhr.open(type, url, true)
+        // xhr.send(null)
+        */
+
+        /*
+        // 2.send未调用，readyState = 1
+        // 调用open会使readyState = 1，由于已经注册了readystatechange函数，所以会去触发该函数
+        // 若open放在注册readystatechange函数前，则不会触发该函数
+        // open函数触发readystatechange函数是同步式的触发，open代码下一步会走到readystatechange里面
+        // readystatechange执行完后，接着open下面一行代码执行
+         xhr.open(type, url, true)
+        // xhr.send(null)
+        */
+
+        // 3.readyState = 1 2 3 4
+        // open触发readystatechange同上面的例子2
+        // send异步触发readystatechange，send执行后，会发送http请求，同时执行send后面的代码，到结束。
+        // 然后在下一个执行周期，用readyState = 2、3、4依次触发readystatechange回调
+        xhr.open(type, url, true)
+        xhr.send(null)
     }
 
     var $ = document.getElementById.bind(document);
