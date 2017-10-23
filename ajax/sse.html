@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<button type="button" id="start">开始推送</button>
+<button type="button" id="stop">停止请求</button>
+<div id="result"></div>
+<script type="text/javascript">
+    var $ = document.getElementById.bind(document);
+    function sse() {
+        var source = new EventSource('http://localhost:8080/');
+        source.onmessage = function (e) {
+            var data = JSON.parse(e.data),
+                origin = e.origin;
+            $('result').innerHTML += data+'<br>';
+        }
+        source.onopen = function (e) {
+            console.log(e)
+        }
+        source.onerror = function (e) {
+            console.log(e)
+        }
+        source.addEventListener('my-event', function (e) {
+            $('result').innerHTML += '自定义事件：'+e.data+'<br>';
+        })
+        sse.stop = function () {
+            source.close();
+        }
+    }
+    window.onload = function () {
+        var btn = $('start'),
+            result = $('result'),
+            type = $('type');
+        btn.onclick = function () {
+            sse()
+        }
+        $('stop').onclick = function () {
+            sse.stop();
+        }
+    }
+</script>
+</body>
+</html>
