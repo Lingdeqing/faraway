@@ -1,0 +1,11 @@
+{
+  "name": "ajax",
+  "version": "1.0.0",
+  "description": "前端通信",
+  "main": "index.js",
+  "author": "FrankLin",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^3.2.0"
+  }
+}
