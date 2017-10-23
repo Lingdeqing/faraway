@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<button type="button" id="request">简单跨域请求</button>
+<button type="button" id="sendJson">复杂跨域请求</button>
+<div id="result"></div>
+<script type="text/javascript">
+    function createCORSRequest(method, url) {
+        var xhr = new XMLHttpRequest();
+        if('withCredentials' in xhr){
+
+            // 检测xhr是否有withCredentials属性
+            // 该属性只存在于XHR2对象中
+            xhr.open(method, url, true);
+        } else if(typeof XDomainRequest != 'undefined'){
+
+            // 检测是否为ie
+            xhr = new XDomainRequest();
+            xhr.open(method, url)
+        } else {
+            xhr = null;
+        }
+        return xhr;
+    }
+
+    var $ = document.getElementById.bind(document);
+
+    window.onload = function () {
+        var btn = $('request'),
+            btn2 = $('sendJson'),
+            result = $('result'),
+            type = $('type');
+        btn.onclick = function () {
+            var url = 'http://localhost:8080/';
+            var xhr = createCORSRequest('GET', url);
+            xhr.send();
+            xhr.onreadystatechange = function (e) {
+                if(xhr.readyState == 4 && xhr.status == 200){
+                    alert(xhr.responseText)
+                }
+            }
+        }
+
+        btn2.onclick = function () {
+            var url = 'http://localhost:8080/';
+            var xhr = createCORSRequest('POST', url);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send({a:1});
+            xhr.onreadystatechange = function (e) {
+                if(xhr.readyState == 4 && xhr.status == 200){
+                    alert(xhr.responseText)
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>
