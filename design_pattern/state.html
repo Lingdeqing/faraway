@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>状态模式</title>
+</head>
+<body>
+<button type="button">low逼、不易扩展开关</button><br>
+<button type="button">low逼、不易扩展多模式开关</button><br>
+<button type="button">面向对象、易扩展开关</button><br>
+<button type="button">es6 generator、易扩展开关</button><br>
+<button type="button">最简单、最清晰、易扩展、js风格开关</button><br>
+<script type="text/javascript">
+
+    // low逼、不易扩展写法
+    // =================================================================
+    // 两种状态
+    var switches = (function () {
+        var state = 'off';
+        return function () {
+            if(state === 'off'){
+                console.log('打开空调');
+                state = 'on';
+            } else {
+                console.log('关闭空调');
+                state = 'off';
+            }
+        }
+    })();
+
+    // 多个状态
+    var switches2 = (function () {
+        var state = 'auto';
+        return function () {
+            if(state === 'auto'){
+                console.log('制热');
+                state = 'hot';
+            } else if(state === 'hot'){
+                console.log('制冷');
+                state = 'cold';
+            } else if(state === 'cold'){
+                console.log('送风');
+                state = 'wind';
+            } else if(state === 'wind'){
+                console.log('除湿');
+                state = 'dry';
+            } else if(state === 'dry'){
+                console.log('自动');
+                state = 'auto';
+            }
+        }
+    })();
+
+    // 面向对象、易扩展的写法
+    // =================================================================
+    // 定义状态
+    var Auto = function (button) {
+        this.turn = button;
+    }
+    Auto.prototype.press = function () {
+        console.log('制热');
+        this.turn.setState('hot')
+    }
+    var Hot = function (button) {
+        this.turn = button;
+    }
+    Hot.prototype.press = function () {
+        console.log('制冷');
+        this.turn.setState('cold')
+    }
+    var Cold = function (button) {
+        this.turn = button;
+    }
+    Cold.prototype.press = function () {
+        console.log('送风');
+        this.turn.setState('wind')
+    }
+    var Wind = function (button) {
+        this.turn = button;
+    }
+    Wind.prototype.press = function () {
+        console.log('除湿');
+        this.turn.setState('dry')
+    }
+    var Dry = function (button) {
+        this.turn = button;
+    }
+    Dry.prototype.press = function () {
+        console.log('自动');
+        this.turn.setState('auto')
+    }
+    // 定义状态仓库
+    var Remoter = function () {
+        this.auto = new Auto(this);
+        this.hot = new Hot(this);
+        this.cold = new Cold(this);
+        this.wind = new Wind(this);
+        this.dry = new Dry(this);
+        this.state = 'auto';
+    }
+    Remoter.prototype.setState = function (state) {
+        this.state = state;
+    }
+    Remoter.prototype.press = function () {
+        this[this.state].press();
+    }
+    Remoter.prototype.init = function () {
+        document.querySelectorAll('button')[2].addEventListener('click', () =>{
+            this.press();
+        })
+    }
+
+    // es6 generator、易扩展写法
+    // =================================================================
+    var auto = function () {
+        console.log('自动')
+    }
+    var hot = function () {
+        console.log('制热')
+    }
+    var cold = function () {
+        console.log('制冷')
+    }
+    function* models() {
+        for(var i = 0, fn, len = arguments.length; fn = arguments[i++]; ){
+            yield fn();
+            if(i === len) {
+                i = 0;
+            }
+        }
+    }
+    var exe = models(auto, hot, cold);
+
+    // 最简单、最清晰、易扩展、js风格的写法
+    // =================================================================
+    var next = (function () {
+        var i = 0, states = arguments, len = states.length;
+        return function () {
+            states[i++]();
+            if(i === len) i = 0;
+        }
+    })(auto, hot, cold);
+    window.onload = function () {
+        document.querySelector('button').addEventListener('click', function () {
+            switches();
+        })
+        document.querySelectorAll('button')[1].addEventListener('click', function () {
+            switches2();
+        })
+        new Remoter().init();
+        document.querySelectorAll('button')[3].addEventListener('click', function () {
+            exe.next();
+        })
+        document.querySelectorAll('button')[4].addEventListener('click', function () {
+            next();
+        })
+    }
+</script>
+</body>
+</html>
