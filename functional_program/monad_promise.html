@@ -5,12 +5,12 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Promise是异步编程的monad</title>
 </head>
 <body>
 <div>
     <ul>
-        <li>1</li>
+        <li class="abc def">1</li>
         <li>2</li>
         <li>3</li>
         <li>4</li>
@@ -22,89 +22,19 @@
     </div>
 </div>
 <script type="text/javascript">
-    var sin = function (x) { return Math.sin(x) }
-    var cube = function (x) { return x * x * x }
-    var sinCube = function (x) { return sin(cube(x)) }
-    console.log(sinCube(2))
-
+    // list monad
+    // =========================================================
     var compose = function (f, g) {
         return function (x) {
             return f(g(x))
         }
-    }
-    var sinOfCube = compose(sin, cube);
-    console.log(sinOfCube(2))
-
-    // console.log副作用
-    var sinDebug = function (x) {
-        console.log('sin was called');
-        return Math.sin(x);
-    }
-
-    var sinDebug = function (x) {
-        return [Math.sin(x), 'sin was called.'];
-    }
-    var cubeDebug = function (x) {
-        return [x * x * x, 'cube was called.']
-    }
-    console.log(cubeDebug(2))
-    console.log(compose(sinDebug, cubeDebug)(2))    // 输出错误，[NaN, 'sin was called']
-
-    // 重新定义compose函数
-    var composeDebug = function (f, g) {
-        return function (x) {
-            var gx = g(x),
-                gx0 = gx[0],
-                gx1 = gx[1],
-                fx = f(gx0),
-                fx0 = fx[0],
-                fx1= fx[1];
-            return [fx0, gx1 + fx1];
-        }
-    }
-    console.log(composeDebug(sinDebug, cubeDebug)(3))
-    
-    // 将 Number -> (Number, String)
-    // 转换为 (Number, String) -> (Number, String)
-    // 从而可以使用原来的compose函数，而不是重写一个composeDebug函数
-    var bind = function (f) {
-        return function (tuple) {
-            var result = f(tuple[0]);
-            return [result[0], tuple[1] + result[1]]
-        }
-    }
-    console.log(compose(bind(sinDebug), bind(cubeDebug))([2, '']))
-
-    // 现在的参数类型均为(Number, String)
-    // 有时仅需要(Number)作为参数
-    // 需要函数进行转换 (Number) -> (Number, String)
-    var unit = function (x) {
-        return [x, '']
-    }
-    console.log(compose(bind(sinDebug), bind(cubeDebug))(unit(2)))
-
-    // children :: HTMLElement -> [HTMLElement]
-    var children = function (node) {
-        var children = node.children, array = [];
-        for(var i = 0, n = children.length; i < n; i++){
-            array.push(children[i])
-        }
-        return array;
-    }
-
-    var head = document.getElementsByTagName('head')[0];
-    console.log(children(head))
-
-    // grandChildren :: HTMLElement -> [HTMLElement]
-    var grandChildren = compose(children, children);
-    // console.log(grandChildren(head));    // 出错了，由于输入与输出不对称
-
+    };
     // unit :: a -> [a]
-    var unit = function (a) {
-        return [a]
+    var unit = function (x) {
+        return [x];
     }
-    
     // bind :: (a -> [a]) -> ([a] -> [a])
+    // 正确的签名， 输入输出类型不必一致。bind :: (a -> [b]) -> ([a] -> [b])
     var bind = function (f) {
         return function (list) {
             var result = [];
@@ -114,10 +44,112 @@
             return result;
         }
     }
+    // byTagName :: String -> [HTMLElement]
+    var byTagName = function (name) {
+        var nodes = document.getElementsByTagName(name);
+        return Array.prototype.slice.call(nodes);
+    }
+    // classNames :: HTMLElement -> [String]
+    var classNames = function (node) {
+        return node.className.split(/\s+/)
+    }
 
-    var grandChildren = compose(bind(children), bind(children));
-    var div = document.getElementsByTagName('div')[0];
-    console.log(grandChildren(unit(div)));
+    // classNameByTag :: [String] -> [String]
+    var classNameByTag = compose(bind(classNames), bind(byTagName))
+    console.log(classNameByTag(unit('li')))
+
+    // 管道语法
+    // =========================================================
+    // bind :: [a] -> (a -> [b]) -> [b]
+    var bind = function (list, f) {
+        var result = [];
+        for(var i = 0, n = list.length; i < n; i++){
+            result = result.concat(f(list[i]))
+        }
+        return result;
+    }
+    
+    // pipe :: [a] -> [a -> [b]] -> [b]
+    var pipe = function (list, functions) {
+        for(var i = 0, n = functions.length; i < n; i++){
+            list = bind(list, functions[i]);
+        }
+        return list;
+    }
+    console.log(pipe(unit('li'), [byTagName, classNames]));
+
+    // 更宽泛的pipe签名
+    // pipe :: m a -> [a -> m b] -> m b
+    // m 表示 "...的列表"，例如a表示字符串类型， 则m a表示"字符串的列表"
+
+    // Promise monad
+    // =========================================================
+    // readFile :: String -> Promise String
+    var readFile = function (path) {
+        return new Promise(function (resolve, reject) {
+            setTimeout(function () {
+                console.log('file ' + path + ' is read')
+                resolve('{"url":"http://www.test.com"}');
+            }, 500)
+        });
+    }
+    // getUrl :: String -> Promise URI
+    var getUrl = function (json) {
+        return new Promise(function (resolve, reject) {
+            setTimeout(function () {
+                console.log('url '+json+' is parsed')
+                resolve(JSON.parse(json).url);
+            }, 500)
+        });
+    }
+    // httpGet :: URI -> Promise Response
+    var httpGet = function (uri) {
+        return new Promise(function (resolve, reject) {
+            setTimeout(function () {
+                console.log('url '+uri+' is accessed')
+                resolve({body: 'data from backend'});
+            }, 500)
+        });
+    }
+    // responseBody :: Response -> Promise String
+    var responseBody = function (response) {
+        return new Promise(function (resolve, reject) {
+            setTimeout(function () {
+                console.log('response '+response+' is parsed')
+                resolve(response.body);
+            }, 500)
+        });
+    }
+    // print :: String -> Promise null
+    var print = function (string) {
+        return new Promise(function (resolve, reject) {
+            setTimeout(function () {
+                console.log('print body '+string)
+                resolve(null);
+            }, 500)
+        });
+    }
+
+    // unit :: a -> Promise a
+    var unit = function (x) {
+        return new Promise(function (resolve) {
+            resolve(x);
+        })
+    }
+    // bind :: Promise a -> (a -> Promise b) -> Promise b
+    var bind = function (input, f) {
+        return new Promise(function (resolve) {
+            input.then(function (x) {
+                f(x).then(resolve)
+            })
+        })
+    }
+    pipe(unit('/url.json'),
+        [readFile,
+            getUrl,
+            httpGet,
+            responseBody,
+            print]);
 </script>
 </body>
 </html>
