@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<script type="text/javascript">
+    // document对象还在加载
+    console.log(document.readyState);
+
+    document.onreadystatechange = function () {
+
+        // document完成加载，此时可访问DOM元素
+        // 但是框架、css、图片等子资源仍在加载
+        // 可以来模拟DomContentLoaded/jquery ready
+        if(document.readyState === 'interactive'){
+            console.log('interactive')
+            var span = document.createElement('span');
+            span.textContent = 'A <span> Element.'
+            document.body.appendChild(span)
+        }
+
+        // document和所有子资源完成加载
+        // window的onload事件即将触发
+        // 可以来模拟onload事件
+        else if(document.readyState === 'complete'){  //
+            console.log('complete')
+        }
+    }
+</script>
+</body>
+</html>
