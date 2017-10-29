@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<div class="test" style="height: 100px;"></div>
+<script type="text/javascript" src="jquery.1.7.2.js"></script>
+<script type="text/javascript">
+    // 判断是否在iframe中
+    if(self !== top){
+        console.log('在iframe中')
+    }
+    if(self.frameElement && self.frameElement.tagName === 'IFRAME'){
+        console.log('在iframe中')
+    }
+
+    $(parent.document).ready(function () {
+
+        // 在iframe中查找父页面元素
+        console.log($('#iframe', window.parent.document)[0]);
+
+    }).load(function () {
+
+        // 子页面调用父页面方法
+        parent.fn();
+
+    })
+    
+    function fn() {
+        console.log('子页面方法')
+    }
+</script>
+</body>
+</html>
