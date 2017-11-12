@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<div class="wrapper">
+    <a href="http://www.baidu.com" class="link">click me</a>
+</div>
+<script type="text/javascript">
+    var $wrapper = document.querySelector('.wrapper')
+    var $link = document.querySelector('.link')
+    var e1, e2
+    var copy1, copy2
+    $link.addEventListener('click', e => {
+        e1 = e;
+        copy1 = copy(e1);
+        console.log('link clicked', copy1);
+    })
+    $wrapper.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        e2 = e;
+        copy2 = copy(e2);
+        console.log('wrapper clicked', copy2);
+        console.log(e1 === e2)
+        diff(copy1, copy2)
+    })
+
+    function copy(obj) {
+        var res = new Map();
+        for(let key in obj){
+            res.set(key, obj[key])
+        }
+        return res;
+    }
+
+    function diff(m1, m2) {
+        if(m1.size < m2.size){
+            console.log('different length')
+            [m1, m2] = [m2, m1]
+        }
+        for(let key of m1.keys()){
+            if(m1.get(key) !== m2.get(key)){
+                console.log(`${key}:${m1.get(key)}\n${m2.get(key)}\n`)
+            }
+        }
+    }
+</script>
+</body>
+</html>
